@@ -10,7 +10,8 @@ CREATE TABLE "User" (
 CREATE TABLE "Article" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "title" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "imageUrl" TEXT,
     "authorId" INTEGER NOT NULL,
     CONSTRAINT "Article_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -36,3 +37,6 @@ CREATE TABLE "Like" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Like_userId_articleId_key" ON "Like"("userId", "articleId");
