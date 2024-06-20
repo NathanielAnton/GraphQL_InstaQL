@@ -32,8 +32,12 @@
       <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
         <h2 class="mb-0">Tous les Articles</h2>
         <div>
-          <button class="btn btn-secondary" @click="applyFilter('author')">Filtrer par Auteur</button>
-          <button class="btn btn-secondary ml-2" @click="applyFilter('likes')">Filtrer par Popularité</button>
+          <button class="btn btn-secondary ml-2" @click="toggleSortOrder">
+            Filtrer par Popularité
+            <i :class="sortOrderIcon"></i>
+          </button>
+          <button class="btn btn-secondary ml-2" @click="resetFilter">Reset <i
+              class="fa-solid fa-rotate-right"></i></button>
         </div>
       </div>
       <div class="scrollable-box">
@@ -76,6 +80,7 @@ export default defineComponent({
     const articles = ref<GetArticlesQuery['articles']>([]);
     const showModal = ref(false);
     const filterType = ref<string | null>(null);
+    const sortOrder = ref<'asc' | 'desc'>('desc');
 
     watchEffect(() => {
       if (topResult.value) {
@@ -97,19 +102,32 @@ export default defineComponent({
       topArticles.value.push(newArticle);
     };
 
+    const toggleSortOrder = () => {
+      sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+      applyFilter('likes');
+    };
+
     const applyFilter = (type: string) => {
       filterType.value = type;
     };
 
+    const resetFilter = () => {
+      filterType.value = null;
+    };
+
     const filteredArticles = computed(() => {
-      if (!filterType.value) return articles.value;
-      // if (filterType.value === 'author') {
-      //   return [...articles.value].sort((a, b) => a.author.name.localeCompare(b.author.name));
-      // }
+      let sortedArticles = articles.value;
       if (filterType.value === 'likes') {
-        return [...articles.value].sort((a, b) => b.likes.length - a.likes.length);
+        sortedArticles = [...articles.value].sort((a, b) => {
+          const diff = b.likes.length - a.likes.length;
+          return sortOrder.value === 'asc' ? -diff : diff;
+        });
       }
-      return articles.value;
+      return sortedArticles;
+    });
+
+    const sortOrderIcon = computed(() => {
+      return sortOrder.value === 'asc' ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
     });
 
     return {
@@ -119,7 +137,10 @@ export default defineComponent({
       showModal,
       addArticle,
       applyFilter,
+      resetFilter,
       filteredArticles,
+      sortOrderIcon,
+      toggleSortOrder,
     };
   },
 });
