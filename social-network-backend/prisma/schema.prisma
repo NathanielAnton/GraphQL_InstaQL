@@ -1,6 +1,6 @@
 datasource db {
-  provider = "mysql"
-  url      = "mysql://myuser:mypassword@localhost:3307/mydatabase"
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
