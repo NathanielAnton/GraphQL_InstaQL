@@ -49,9 +49,6 @@
     <div v-else>
       <p class="text-center">Article non trouvé.</p>
     </div>
-    <div v-if="alertMessage" :class="['alert', alertClass]" role="alert" style="margin-top: 20px;">
-      {{ alertMessage }}
-    </div>
   </div>
 </template>
 
@@ -75,8 +72,6 @@ export default defineComponent({
     const { loading, result, refetch } = useQuery<GetArticleQuery>(GET_ARTICLE, { id: props.id });
     const article = ref<GetArticleQuery['article'] | null>(null);
     const newComment = ref('');
-    const alertMessage = ref('');
-    const alertClass = ref('');
     const isLoggedIn = computed(() => !!localStorage.getItem('token'));
 
     watchEffect(() => {
@@ -89,12 +84,6 @@ export default defineComponent({
     const { mutate: likeArticleMutation } = useMutation<LikeArticleMutation>(LIKE_ARTICLE);
 
     const addComment = async () => {
-      if (newComment.value.length > 100) {
-        alertMessage.value = 'Le commentaire ne doit pas dépasser 100 caractères.';
-        alertClass.value = 'alert-danger';
-        return;
-      }
-
       try {
         const response = await createCommentMutation({
           articleId: props.id,
@@ -114,12 +103,10 @@ export default defineComponent({
             comments: [...article.value.comments, newCommentData]
           };
           newComment.value = '';
-          alertMessage.value = 'Commentaire ajouté!';
-          alertClass.value = 'alert-success';
+          alert("Commentaire ajouté!");
         }
       } catch (error) {
-        alertMessage.value = 'Erreur lors de l\'ajout du commentaire.';
-        alertClass.value = 'alert-danger';
+        alert(error);
         console.error('Erreur lors de l\'ajout du commentaire:', error);
       }
     };
@@ -143,13 +130,11 @@ export default defineComponent({
             ...article.value,
             likes: [...article.value.likes, newLikeData]
           };
-          alertMessage.value = 'Like posé!';
-          alertClass.value = 'alert-success';
+          alert("Like posé!");
           console.log("Like added:", newLikeData);
         }
       } catch (error) {
-        alertMessage.value = 'Erreur lors de l\'ajout du like. Vous avez déjà like ce post 🤔';
-        alertClass.value = 'alert-danger';
+        alert(error);
         console.error('Erreur lors de l\'ajout du like:', error);
       }
     };
@@ -167,8 +152,6 @@ export default defineComponent({
       refetch,
       isLoggedIn,
       goBack,
-      alertMessage,
-      alertClass,
     };
   },
 });
@@ -204,10 +187,5 @@ export default defineComponent({
 .btn-primary i,
 .btn-success i {
   margin-right: 5px;
-}
-
-.alert {
-  margin-top: 20px;
-  text-align: center;
 }
 </style>

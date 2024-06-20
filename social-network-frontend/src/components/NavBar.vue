@@ -28,19 +28,16 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
-// import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
-    // const router = useRouter();
-
     const isLoggedIn = computed(() => {
       return !!localStorage.getItem('token');
     });
 
     const logout = () => {
       localStorage.removeItem('token');
-      window.location.href = '/'; // Refresh the page to ensure the state is updated
+      window.location.href = '/';
     };
 
     return {
@@ -54,22 +51,46 @@ export default defineComponent({
 <style scoped>
 .navbar {
   margin-bottom: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-brand {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #f8f9fa !important;
+  transition: color 0.3s;
+}
+
+.navbar-brand:hover {
+  color: #d3d3d3 !important;
 }
 
 .nav-link {
   font-size: 1.1rem;
+  color: #f8f9fa !important;
+  transition: color 0.3s;
+}
+
+.nav-link:hover {
+  color: #d3d3d3 !important;
 }
 
 .btn-link {
-  color: white;
+  color: #f8f9fa !important;
+  font-size: 1.1rem;
+  transition: color 0.3s, text-decoration 0.3s;
 }
 
 .btn-link:hover {
   text-decoration: underline;
-  color: #ccc;
+  color: #d3d3d3 !important;
+}
+
+.navbar-toggler {
+  border: none;
+}
+
+.navbar-toggler-icon {
+  filter: brightness(0) invert(1);
 }
 </style>
