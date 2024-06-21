@@ -14,7 +14,7 @@ Le projet est une application qui permet de gérer des articles en fournissant d
 
 2. Navigate to the backend directory:
    ```sh
-   cd .\social-network-backend\
+   cd .\GraphQL_InstaQL\social-network-backend\
    ```
 
 3. Install the dependencies:
@@ -33,7 +33,7 @@ Le projet est une application qui permet de gérer des articles en fournissant d
 
 2. Navigate to the frontend directory:
    ```sh
-   cd .\social-network-frontend\
+   cd .\GraphQL_InstaQL\social-network-frontend\
    ```
 
 3. Install the dependencies:
