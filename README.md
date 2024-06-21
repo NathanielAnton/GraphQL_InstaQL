@@ -14,7 +14,7 @@ Le projet est une application qui permet de gérer des articles en fournissant d
 
 2. Navigate to the backend directory:
    ```sh
-   cd .\graphql_projet\social-network-backend\
+   cd .\social-network-backend\
    ```
 
 3. Install the dependencies:
@@ -33,7 +33,7 @@ Le projet est une application qui permet de gérer des articles en fournissant d
 
 2. Navigate to the frontend directory:
    ```sh
-   cd .\graphql_projet\social-network-frontend\
+   cd .\social-network-frontend\
    ```
 
 3. Install the dependencies:
