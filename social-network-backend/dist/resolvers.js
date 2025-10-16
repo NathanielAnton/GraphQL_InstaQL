@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma = new client_1.PrismaClient();
 const resolvers = {
@@ -13,7 +13,15 @@ const resolvers = {
             return context.prisma.user.findMany();
         },
         articles: async (_parent, _args, context) => {
-            return context.prisma.article.findMany({ include: { author: true, comments: { include: { author: true } }, likes: true } });
+            return context.prisma.article.findMany({
+                include: {
+                    author: true,
+                    comments: {
+                        include: { author: true }
+                    },
+                    likes: true
+                }
+            });
         },
         topArticles: async (_parent, _args, context) => {
             const articles = await context.prisma.article.findMany({
@@ -29,15 +37,16 @@ const resolvers = {
                     likes: true
                 },
             });
-            return articles.map(article => ({
-                ...article,
-                likesCount: article.likes.length,
-            }));
+            return articles;
         },
         article: async (_parent, args, context) => {
             return context.prisma.article.findUnique({
                 where: { id: parseInt(args.id, 10) },
-                include: { author: true, comments: { include: { author: true } }, likes: true },
+                include: {
+                    author: true,
+                    comments: { include: { author: true } },
+                    likes: true
+                },
             });
         },
         myArticles: async (_parent, _args, context) => {
@@ -46,12 +55,19 @@ const resolvers = {
             }
             return context.prisma.article.findMany({
                 where: { authorId: context.userId },
-                include: { author: true, comments: { include: { author: true } }, likes: true },
+                include: {
+                    author: true,
+                    comments: { include: { author: true } },
+                    likes: true
+                },
             });
         },
     },
+    // Resolver UNIQUEMENT pour likesCount (supprimer commentsCount)
     Article: {
-        likesCount: (parent) => parent.likes.length,
+        likesCount: (parent) => {
+            return parent.likes ? parent.likes.length : 0;
+        }
     },
     Mutation: {
         signup: async (_parent, args, context) => {
@@ -61,7 +77,7 @@ const resolvers = {
             if (existingUser) {
                 throw new Error('Email déjà existant');
             }
-            const hashedPassword = await bcrypt_1.default.hash(args.password, 10);
+            const hashedPassword = await bcryptjs_1.default.hash(args.password, 10);
             return context.prisma.user.create({
                 data: {
                     email: args.email,
@@ -75,7 +91,7 @@ const resolvers = {
             if (!user) {
                 throw new Error('No such user found');
             }
-            const valid = await bcrypt_1.default.compare(args.password, user.password);
+            const valid = await bcryptjs_1.default.compare(args.password, user.password);
             if (!valid) {
                 throw new Error('Invalid password');
             }
@@ -94,7 +110,9 @@ const resolvers = {
                     author: { connect: { id: context.userId } }
                 },
                 include: {
-                    author: true
+                    author: true,
+                    comments: true,
+                    likes: true
                 }
             });
             return article;

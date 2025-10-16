@@ -1,8 +1,7 @@
-import { PrismaClient, User, Article as PrismaArticle, Comment, Like } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Context } from './context';
-import { Article } from './types';
 
 const prisma = new PrismaClient();
 
@@ -38,13 +37,21 @@ interface LikeArticleArgs {
 
 const resolvers = {
   Query: {
-    users: async (_parent: {}, _args: {}, context: Context): Promise<User[]> => {
+    users: async (_parent: {}, _args: {}, context: Context) => {
       return context.prisma.user.findMany();
     },
-    articles: async (_parent: {}, _args: {}, context: Context): Promise<PrismaArticle[]> => {
-      return context.prisma.article.findMany({ include: { author: true, comments: { include: { author: true } }, likes: true } });
+    articles: async (_parent: {}, _args: {}, context: Context) => {
+      return context.prisma.article.findMany({ 
+        include: { 
+          author: true, 
+          comments: { 
+            include: { author: true } 
+          }, 
+          likes: true 
+        } 
+      });
     },
-    topArticles: async (_parent: {}, _args: {}, context: Context): Promise<PrismaArticle[]> => {
+    topArticles: async (_parent: {}, _args: {}, context: Context) => {
       const articles = await context.prisma.article.findMany({
         take: 3,
         orderBy: {
@@ -59,32 +66,42 @@ const resolvers = {
         },
       });
 
-      return articles.map(article => ({
-        ...article,
-        likesCount: article.likes.length,
-      }));
+      return articles;
     },
-    article: async (_parent: {}, args: { id: string }, context: Context): Promise<PrismaArticle | null> => {
+    article: async (_parent: {}, args: { id: string }, context: Context) => {
       return context.prisma.article.findUnique({
         where: { id: parseInt(args.id, 10) },
-        include: { author: true, comments: { include: { author: true } }, likes: true },
+        include: { 
+          author: true, 
+          comments: { include: { author: true } }, 
+          likes: true 
+        },
       });
     },
-    myArticles: async (_parent: {}, _args: {}, context: Context): Promise<PrismaArticle[]> => {
+    myArticles: async (_parent: {}, _args: {}, context: Context) => {
       if (!context.userId) {
         throw new Error('Not authenticated');
       }
       return context.prisma.article.findMany({
         where: { authorId: context.userId },
-        include: { author: true, comments: { include: { author: true } }, likes: true },
+        include: { 
+          author: true, 
+          comments: { include: { author: true } }, 
+          likes: true 
+        },
       });
     },
   },
+  
+  // Resolver UNIQUEMENT pour likesCount (supprimer commentsCount)
   Article: {
-    likesCount: (parent: Article) => parent.likes.length,
+    likesCount: (parent: any) => {
+      return parent.likes ? parent.likes.length : 0;
+    }
   },
+
   Mutation: {
-    signup: async (_parent: {}, args: SignupArgs, context: Context): Promise<User> => {
+    signup: async (_parent: {}, args: SignupArgs, context: Context) => {
       const existingUser = await context.prisma.user.findUnique({
         where: { email: args.email },
       });
@@ -117,7 +134,7 @@ const resolvers = {
       const token = jwt.sign({ userId: user.id }, 'APP_SECRET');
       return token;
     },
-    createArticle: async (_parent: {}, args: CreateArticleArgs, context: Context): Promise<PrismaArticle> => {
+    createArticle: async (_parent: {}, args: CreateArticleArgs, context: Context) => {
       if (!context.userId) {
         throw new Error('Not authenticated');
       }
@@ -130,13 +147,15 @@ const resolvers = {
           author: { connect: { id: context.userId } }
         },
         include: {
-          author: true
+          author: true,
+          comments: true,
+          likes: true
         }
       });
 
       return article;
     },
-    createComment: async (_parent: {}, args: CreateCommentArgs, context: Context): Promise<Comment> => {
+    createComment: async (_parent: {}, args: CreateCommentArgs, context: Context) => {
       if (!context.userId) {
         throw new Error('Not authenticated');
       }
@@ -159,7 +178,7 @@ const resolvers = {
         throw new Error('Failed to create comment');
       }
     },
-    likeArticle: async (_parent: {}, args: LikeArticleArgs, context: Context): Promise<Like> => {
+    likeArticle: async (_parent: {}, args: LikeArticleArgs, context: Context) => {
       if (!context.userId) {
         throw new Error('Not authenticated');
       }
@@ -197,7 +216,7 @@ const resolvers = {
       const deleteResult = await prisma.comment.deleteMany({});
       return deleteResult.count;
     },
-    deleteArticle: async (_parent: {}, args: DeleteArticleArgs, context: Context): Promise<PrismaArticle> => {
+    deleteArticle: async (_parent: {}, args: DeleteArticleArgs, context: Context) => {
       if (!context.userId) {
         throw new Error('Not authenticated');
       }
